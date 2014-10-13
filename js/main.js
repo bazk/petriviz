@@ -42,11 +42,35 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         }
     }
 
-    var PetriNetEditor = function(outerContainer) {
+    d3.trigger = function(d3Obj, evtName) {
+        console.log(d3Obj);
+        var el    = d3Obj[0][0]
+          , event = d3.event;
+
+        if (event.initMouseEvent) {     // all browsers except IE before version 9
+            var mousedownEvent = document.createEvent ("MouseEvent");
+            mousedownEvent.initMouseEvent (
+                "mousedown", true, true, window, 0,
+                event.screenX, event.screenY, event.clientX, event.clientY,
+                event.ctrlKey, event.altKey, event.shiftKey, event.metaKey,
+                0, null);
+            el.dispatchEvent (mousedownEvent);
+        } else {
+            if (document.createEventObject) {   // IE before version 9
+                var mousedownEvent = document.createEventObject (window.event);
+                mousedownEvent.button = 1;  // left button is down
+                el.fireEvent (evtName, mousedownEvent);
+            }
+        }
+    };
+
+    var PetriNetEditor = function(outerContainer, toolsContainer) {
         var self = this;
 
         self.outerContainer = outerContainer;
         self.svg = self.outerContainer.append("svg");
+
+        self.toolsContainer = toolsContainer;
 
         d3.select(window).on('resize', function () {
             self.onResize(this);
@@ -76,10 +100,10 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             })
             .on("click", function () {
                 self.onMouseClick(this);
-            })
-            .on("contextmenu", function () {
-                self.onContextMenu(this);
             });
+            // .on("contextmenu", function () {
+            //     self.onContextMenu(this);
+            // });
 
         // background
         self.svg.append("rect")
@@ -133,7 +157,8 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             .translate([self.width / 2, self.height / 2])
             .on("zoom", function () { self.onZoom(this); });
 
-        self.svg.call(self.zoom);
+        var touchtime;
+        self.svg.call(self.zoom).on("dblclick.zoom", null);
 
         self.drag = d3.behavior.drag()
             .origin(function(d) { return d; })
@@ -145,6 +170,30 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
 
         self.contextMenu = self.outerContainer.append("ul")
             .classed("dropdown-menu", true);
+
+
+        self.crosshair = self.container.append("g")
+            .attr("class", "crosshair")
+            .style("display", "none");
+
+        // horizontal crosshair
+        self.crosshair.append("line")
+            .attr({
+                "x1": -10,
+                "y1": 0,
+                "x2": 10,
+                "y2": 0
+            });
+
+        // vertical crosshair
+        self.crosshair.append("line")
+            .attr({
+                "x1": 0,
+                "y1": -10,
+                "x2": 0,
+                "y2": 10
+            });
+
 
         self.draw();
     }
@@ -248,13 +297,19 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             .on("mouseout", function (d) {
                 self.onMouseOutObject(this, d);
             })
+            .on("mousedown", function (d) {
+                self.onMouseDownObject(this, d);
+            })
+            .on("mouseup", function (d) {
+                self.onMouseUpObject(this, d);
+            })
             .on("click", function (d) {
                 self.onMouseClickObject(this, d);
             })
-            .on("contextmenu", function (d) {
-                self.onContextMenuObject(this, d);
-            })
-            // .call(this.drag);
+            // .on("contextmenu", function (d) {
+            //     self.onContextMenuObject(this, d);
+            // })
+            .call(this.drag);
 
         this.places.exit()
             .remove();
@@ -278,13 +333,19 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             .on("mouseout", function (d) {
                 self.onMouseOutObject(this, d);
             })
+            .on("mousedown", function (d) {
+                self.onMouseDownObject(this, d);
+            })
+            .on("mouseup", function (d) {
+                self.onMouseUpObject(this, d);
+            })
             .on("click", function (d) {
                 self.onMouseClickObject(this, d);
             })
-            .on("contextmenu", function (d) {
-                self.onContextMenuObject(this, d);
-            })
-            // .call(this.drag);
+            // .on("contextmenu", function (d) {
+            //     self.onContextMenuObject(this, d);
+            // })
+            .call(this.drag);
 
         this.transitions.exit()
             .remove();
@@ -308,7 +369,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
     }
 
     PetriNetEditor.prototype.onZoom = function () {
-        this.mouseDown = false;
+        this.leftMouse = false;
 
         this.hideContextMenu();
 
@@ -348,35 +409,11 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         }
     }
 
-    PetriNetEditor.prototype.onMouseDown = function () {
-    }
-
-    PetriNetEditor.prototype.onMouseUp = function () {
-    }
-
     PetriNetEditor.prototype.onMouseOver = function () {
     }
 
-    PetriNetEditor.prototype.onMouseMove = function () {
-        var self = this;
-
-        self.newArcMove();
-    }
 
     PetriNetEditor.prototype.onMouseOut = function () {
-    }
-
-    PetriNetEditor.prototype.onMouseClick = function (elem) {
-        var self = this;
-
-        if (self.selectedObject) {
-            self.selectedObject.elem.classed('selected', false);
-            self.selectedObject = undefined;
-        }
-
-        self.hideContextMenu();
-
-        self.newArcEnd();
     }
 
     PetriNetEditor.prototype.onMouseOverObject = function (elem, d) {
@@ -389,6 +426,75 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         var self = this;
 
         self.newArcOut(elem, d);
+    }
+
+    PetriNetEditor.prototype.onMouseClick = function (elem) {
+        var self = this;
+
+        if (self.selectedObject) {
+            self.selectedObject.elem.classed('selected', false);
+            self.selectedObject = undefined;
+        }
+
+        self.setTools(0);
+
+        self.hideContextMenu();
+
+        self.newArcEnd();
+    }
+
+    PetriNetEditor.prototype.onMouseDown = function () {
+        var self = this;
+
+        self.crosshairPos = d3.mouse(self.container.node());
+
+        self.crosshair
+            .style("display", "block")
+            .attr("transform", "translate(" + self.crosshairPos[0] + ", " + self.crosshairPos[1] + ")");
+    }
+
+    PetriNetEditor.prototype.onMouseMove = function () {
+        var self = this;
+
+        self.newArcMove();
+    }
+
+    PetriNetEditor.prototype.onMouseUp = function () {
+        var self = this;
+    }
+
+    PetriNetEditor.prototype.onMouseDownObject = function (elem, d) {
+        var self = this;
+
+        self.crosshair
+            .style("display", "none");
+
+        // self.hideContextMenu();
+
+        // if (d3.event.button == 0) {
+        //     d3.event.stopPropagation();
+
+        //     self.leftMouse = true;
+        // }
+    }
+
+    PetriNetEditor.prototype.onMouseUpObject = function (elem, d) {
+        var self = this;
+
+        // if (self.leftMouse) {
+            // d3.event.stopPropagation();
+
+        //     if (self.selectedObject) {
+        //         self.selectedObject.elem.classed('selected', false);
+        //     }
+        //     self.selectedObject = {
+        //         elem: d3.select(elem),
+        //         data: d
+        //     };
+        //     self.selectedObject.elem.classed('selected', true);
+
+        // }
+        self.newArcEnd(elem, d);
     }
 
     PetriNetEditor.prototype.onMouseClickObject = function (elem, d) {
@@ -405,72 +511,73 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         };
         self.selectedObject.elem.classed('selected', true);
 
-        self.newArcEnd(elem, d);
+        self.setTools(1);
     }
 
-    PetriNetEditor.prototype.onContextMenu = function (elem) {
-        d3.event.preventDefault();
+    // PetriNetEditor.prototype.onContextMenu = function (elem) {
+    //     d3.event.preventDefault();
+    //     d3.event.stopPropagation();
 
-        var self = this;
+    //     var self = this;
 
-        var xycoord = d3.mouse(self.container.node());
+    //     var xycoord = d3.mouse(self.container.node());
 
-        var items = [
-            {
-                text: 'Add Place',
-                action: function () {
-                    net.push({
-                        id: net.length,
-                        type: "place",
-                        x: xycoord[0],
-                        y: xycoord[1]
-                    });
+    //     var items = [
+    //         {
+    //             text: 'Add Place',
+    //             action: function () {
+    //                 net.push({
+    //                     id: net.length,
+    //                     type: "place",
+    //                     x: xycoord[0],
+    //                     y: xycoord[1]
+    //                 });
 
-                    self.queueSave();
-                    self.draw();
-                    self.hideContextMenu();
-                }
-            },
-            {
-                text: 'Add Transition',
-                action: function () {
-                    net.push({
-                        id: net.length,
-                        type: "transition",
-                        x: xycoord[0],
-                        y: xycoord[1]
-                    });
+    //                 self.queueSave();
+    //                 self.draw();
+    //                 self.hideContextMenu();
+    //             }
+    //         },
+    //         {
+    //             text: 'Add Transition',
+    //             action: function () {
+    //                 net.push({
+    //                     id: net.length,
+    //                     type: "transition",
+    //                     x: xycoord[0],
+    //                     y: xycoord[1]
+    //                 });
 
-                    self.queueSave();
-                    self.draw();
-                    self.hideContextMenu();
-                }
-            }
-        ];
+    //                 self.queueSave();
+    //                 self.draw();
+    //                 self.hideContextMenu();
+    //             }
+    //         }
+    //     ];
 
-        self.showContextMenu(items, d3.event.offsetX, d3.event.offsetY);
-    }
+    //     self.showContextMenu(items, d3.event.offsetX, d3.event.offsetY);
+    // }
 
-    PetriNetEditor.prototype.onContextMenuObject = function (elem, d) {
-        d3.event.preventDefault();
-        d3.event.stopPropagation();
+    // PetriNetEditor.prototype.onContextMenuObject = function (elem, d) {
+    //     var self = this;
 
-        var self = this;
+    //     d3.event.preventDefault();
+    //     d3.event.stopPropagation();
 
-        var xycoord = d3.mouse(self.container.node());
+    //     var xycoord = d3.mouse(self.container.node());
 
-        var items = [
-            {
-                text: 'Add Arc',
-                action: function () {
-                    self.newArcStart(elem, d);
-                    self.hideContextMenu();
-                }
-            }
-        ];
+    //     var items = [
+    //         {
+    //             text: 'Add Arc',
+    //             action: function () {
+    //                 self.newArcStart(elem, d);
+    //                 self.hideContextMenu();
+    //             }
+    //         }
+    //     ];
 
-        self.showContextMenu(items, d3.event.offsetX, d3.event.offsetY);
-    }
+    //     self.showContextMenu(items, d3.event.offsetX, d3.event.offsetY);
+    // }
 
     PetriNetEditor.prototype.showContextMenu = function (items, x, y) {
         var self = this;
@@ -513,7 +620,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         self.newArc = {};
 
         self.newArc.src = {
-            elem: d3.select(elem),
+            elem: elem,
             data: d
         };
 
@@ -522,6 +629,13 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             .classed("arc", true);
 
         self.newArc.src.elem.classed("dragging", true);
+
+        if (d.type === 'place')
+            self.places.classed("faded", true);
+        else
+            self.transitions.classed("faded", true);
+
+        self.arcs.classed("faded", true);
     }
 
     PetriNetEditor.prototype.newArcMove = function () {
@@ -602,8 +716,18 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             self.newArc.target.elem.classed('dragging', false);
         if (self.newArc.src)
             self.newArc.src.elem.classed('dragging', false);
+
+         if (self.newArc.src.data.type === 'place')
+            self.places.classed("faded", false);
+        else
+            self.transitions.classed("faded", false);
+
+        self.arcs.classed("faded", false);
+
         self.newArc.path.remove();
         self.newArc = undefined;
+
+
     }
 
     PetriNetEditor.prototype.newArcOver = function (elem, d) {
@@ -648,8 +772,93 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         }, 1000);
     }
 
+    PetriNetEditor.prototype.setTools = function (type) {
+        var self = this;
+
+        var buttons = [];
+
+        if (type == 0) {
+            buttons = [
+                {
+                    text: 'Add Place',
+                    action: function () {
+                        net.push({
+                            id: net.length,
+                            type: "place",
+                            x: self.crosshairPos[0],
+                            y: self.crosshairPos[1]
+                        });
+
+                        self.queueSave();
+                        self.draw();
+                    }
+                },
+                {
+                    text: 'Add Transition',
+                    action: function () {
+                        net.push({
+                            id: net.length,
+                            type: "transition",
+                            x: self.crosshairPos[0],
+                            y: self.crosshairPos[1]
+                        });
+
+                        self.queueSave();
+                        self.draw();
+                    }
+                }
+            ]
+        }
+        else if (type == 1) {
+            buttons = [
+                {
+                    text: 'Add Arc',
+                    action: function () {
+                        self.newArcStart(self.selectedObject.elem, self.selectedObject.data);
+                    }
+                }
+            ]
+        }
+
+        self.toolsContainer.selectAll("*").remove();
+        self.toolsContainer.selectAll("button")
+            .data(buttons)
+            .enter()
+            .append("button")
+            .classed("btn", true)
+            .classed("btn-default", true)
+            .classed("navbar-btn", true)
+            .text(function (d) { return d.text; })
+            .on("click", function (d) {
+                if (typeof d.action === 'function') {
+                    d3.event.preventDefault();
+                    d.action(this);
+                }
+            });
+    }
+
 
     var container = d3.select("div.board-container");
-    var editor = new PetriNetEditor(container);
+    var tools = d3.select("div.tools");
+    var editor = new PetriNetEditor(container, tools);
+
+    function toggleFullScreen() {
+        var doc = window.document;
+        var docEl = doc.documentElement;
+
+        var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+        var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+            requestFullScreen.call(docEl);
+        }
+        else {
+            cancelFullScreen.call(doc);
+        }
+    }
+
+    d3.select("#fs").on("click", function () {
+        toggleFullScreen();
+    });
 
 })(window.Modernizr, window.jQuery, window.d3, window.localStorage);
