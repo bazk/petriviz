@@ -1,0 +1,10 @@
+/* TEAM */
+    Dev: Eduardo L. Buratti
+    Contact: eburatti09 [at] gmail.com
+    Twitter: @drbazk
+    From: Curitiba, Paraná, Brazil
+
+
+/* SITE */
+    Language: English
+    Doctype:HTML5
