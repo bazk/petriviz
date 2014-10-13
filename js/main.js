@@ -85,7 +85,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         self.svg.append("rect")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("fill", "#ededed");
+            .classed("background", true);
 
         var defs = self.svg.append('svg:defs');
         defs.append('svg:marker')
@@ -98,6 +98,27 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
             .attr('orient', 'auto')
             .append('svg:path')
             .attr('d', 'M-10,-5L3,0L-10,5');
+
+        var shadow = self.svg.append("filter")
+            .attr('id', "dropShadow")
+            .attr('width', "150%")
+            .attr('height', "150%");
+        shadow.append('feGaussianBlur')
+            .attr('in', "SourceAlpha")
+            .attr('stdDeviation', 2);
+        shadow.append('feOffset')
+            .attr('dx', 1)
+            .attr('dy', 1)
+            .attr('result', "offsetblur");
+        shadow.append("feFlood")
+            .attr('flood-color', "rgba(0,0,0,0.5)");
+        shadow.append("feComposite")
+            .attr('in2', "offsetblur")
+            .attr('operator', "in");
+        var merge = shadow.append('feMerge');
+        merge.append('feMergeNode');
+        merge.append('feMergeNode')
+            .attr('in', "SourceGraphic");
 
         self.container = self.svg.append("g");
 
@@ -144,6 +165,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
         this.arcs
             .style('marker-end', 'url(#end-arrow)')
             .classed("arc", true)
+            // .attr('filter', 'url(#dropShadow)')
             .attr("d", function (d) {
                 var src, tgt;
 
@@ -239,6 +261,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
 
         this.places
             .classed("place", true)
+            // .attr('filter', 'url(#dropShadow)')
             .attr("cx", function (d) { return d.x; })
             .attr("cy", function (d) { return d.y; })
             .attr("r", 15);
@@ -268,6 +291,7 @@ document.onload = (function(Modernizr, $, d3, localStorage) {
 
         this.transitions
             .classed("transition", true)
+            // .attr('filter', 'url(#dropShadow)')
             .attr("x", function (d) { return d.x - 12; })
             .attr("y", function (d) { return d.y - 12; })
             .attr("width", 24)

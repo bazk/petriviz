@@ -169,6 +169,10 @@ body {
     bottom: 0px;
 }
 
+.background {
+    fill: #f5f5f5;
+}
+
 .grid .tick {
     stroke: lightgrey;
     opacity: 0.7;
@@ -179,7 +183,7 @@ body {
 
 .place {
     fill: #fff;
-    stroke: #000;
+    stroke: #383838;
     stroke-width: 1.5px;
 }
 .place.dragging {
@@ -193,7 +197,7 @@ body {
 
 .transition {
     fill: #fff;
-    stroke: #000;
+    stroke: #383838;
     stroke-width: 1.5px;
 }
 .transition.dragging {
@@ -203,12 +207,13 @@ body {
 }
 
 .arc {
-    stroke: #000;
+    stroke: #383838;
     stroke-width: 1.5px;
 }
 
 .arc-arrow {
-    stroke: #000;
+    fill: #383838;
+    stroke: #383838;
     stroke-width: 1.5px;
 }
 
