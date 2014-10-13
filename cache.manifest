@@ -1,0 +1,10 @@
+CACHE MANIFEST
+# rev 1
+/css/bootstrap.min.css
+/css/main.css
+/css/normalize.css
+/js/main.js
+/js/plugins.js
+/js/vendor/d3.v3.min.js
+/js/vendor/jquery-1.10.2.min.js
+/js/vendor/modernizr-2.6.2.min.js
