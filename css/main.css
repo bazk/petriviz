@@ -10,6 +10,23 @@
    Base styles: opinionated defaults
    ========================================================================== */
 
+@font-face {
+    font-family: "Ubuntu";
+    font-style: normal;
+    font-weight: normal;
+    src: local("Ubuntu"), url("../fonts/Ubuntu.woff") format("woff");
+}
+
+.sans-serif {
+    font-family: Ubuntu, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.serif {
+    font-family: Georgia, "Times New Roman", Times, serif;
+}
+.monospace {
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
 html,
 button,
 input,
@@ -99,6 +116,7 @@ textarea {
 
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
+    font-family: Ubuntu, "Helvetica Neue", Helvetica, Arial, sans-serif;
     padding-top: 50px;
     height: 100%;
 }
@@ -241,9 +259,6 @@ body {
         -ms-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
          -o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
 }
 .context-menu > p {
     margin: 4px 0px;
