@@ -1,7 +1,9 @@
 #!/bin/bash
 
-BUCKET="petriviz.bazk.me"
+script_path="$(readlink -f $(dirname $0))"
+bucket="petriviz.bazk.me"
 
+cd "${script_path}/.."
 s3cmd sync \
     --delete-removed \
     --acl-public \
@@ -11,9 +13,12 @@ s3cmd sync \
     --exclude '*.swp' \
     --exclude 'scripts/*' \
     . \
-    s3://$BUCKET
+    "s3://${bucket}"
 
+cd "${script_path}"
 s3cmd put \
+    --acl-public \
+    --reduced-redundancy \
     --mime-type="text/cache-manifest" \
     cache.manifest \
-    s3://$BUCKET
+    "s3://${bucket}"
