@@ -121,9 +121,25 @@ body {
     height: 100%;
 }
 
-/*.navbar-fixed-top {
-    border: 0;
-}*/
+.btn {
+    padding: 9px 12px 5px 12px;
+}
+.navbar-btn {
+    margin-top: 8px;
+}
+
+.navbar-header {
+    float: left;
+}
+
+.navbar-toolbar > * {
+    margin-left: 4px;
+    float: left;
+}
+
+.navbar-fixed-bottom {
+    border-width: 1px 1px 0px 1px;
+}
 
 .sidebar {
     display: none;
@@ -227,15 +243,27 @@ body {
     stroke: #DF3B3B;
 }
 
-.arc {
-    stroke: #383838;
-    stroke-width: 1.5px;
+.arc.selected > .arc-body {
+    stroke: #DF3B3B;
+}
+.arc.selected > .arc-body > .arc-arrow {
+    fill: #DF3B3B;
 }
 
+.arc-body {
+    stroke: #383838;
+    stroke-width: 1.5px;
+    stroke-linecap: round;
+}
 .arc-arrow {
     fill: #383838;
     stroke: #383838;
-    stroke-width: 1.5px;
+    stroke-width: 0.5px;
+}
+.arc-radius {
+    stroke: transparent;
+    stroke-width: 32px;
+    stroke-linecap: round;
 }
 
 

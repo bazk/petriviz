@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" manifest="/cache.manifest"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" manifest="/cache.manifest"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9" manifest="/cache.manifest"> <![endif]-->
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" manifest="/cache.manifest"> <!--<![endif]-->
     <head>
         <meta charset="utf-8">
@@ -14,33 +14,39 @@
 
         <link rel="stylesheet" href="css/bootstrap.min.css">
         <link rel="stylesheet" href="css/main.css">
+
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script data-main="js/main" src="js/vendor/require.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
+        <div class="modal fade" id="clearConfirmation" tabindex="-1" role="dialog" aria-labelledby="clearConfirmationLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="clearConfirmationLabel">Clear Confirmation</h4>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to empty the net? All data that was not saved will be lost.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="clear" type="button" class="btn btn-danger" data-dismiss="modal">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <div class="tools"></div>
+                <a class="navbar-brand" href="#">PetriViz</a>
             </div>
-            <div class="navbar-collapse collapse">
-                <!-- <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#">Settings</a></li>
-                    <li><a href="#">Profile</a></li>
-                    <li><a href="#">Help</a></li>
-                </ul>
-                <form class="navbar-form navbar-right">
-                    <input type="text" class="form-control" placeholder="Search...">
-                </form> -->
+            <div class="navbar-toolbar">
+                <button type="button" class="btn btn-warning navbar-btn" data-toggle="modal" data-target="#clearConfirmation">Clear</button>
             </div>
         </div>
 
@@ -50,10 +56,12 @@
             </div>
         </div>
 
-        <script src="js/vendor/jquery-1.10.2.min.js"></script>
-        <script src="js/vendor/d3.v3.min.js"></script>
-        <script src="js/plugins.js"></script>
-        <script src="js/main.js"></script>
+        <div class="navbar navbar-inverse navbar-fixed-bottom">
+            <div class="navbar-header"></div>
+            <div class="navbar-toolbar">
+                <div class="tools"></div>
+            </div>
+        </div>
 
         <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
